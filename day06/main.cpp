@@ -5,6 +5,30 @@
 
 using namespace std;
 
+template <int N>
+size_t pos_distinct_n(StringView line) 
+{
+    std::array<char, N> buffer;
+    std::bitset<127> s;
+
+    auto pos = 0;
+
+    for (auto c : line) {
+        buffer[pos % N] = c;
+        ++pos;
+        if (pos >= N) {
+            s = {};
+            for (auto i : integers(N)) {
+                s.set(buffer[i], true);
+            }
+            if (s.count() == N) {
+                return pos;
+            }
+        }
+    }
+    return 0;
+}
+
 //-----------------------------------------------------------------------------
 void solveFile(char const* fname) {
     TextFileIn f(fname);
@@ -19,25 +43,11 @@ void solveFile(char const* fname) {
         if (line.empty()) {
             break;
         }
-        auto pos = 0;
+        auto part1 = pos_distinct_n<4>(line);
+        print(part1);
 
-        for (auto c : line) {
-            buffer[pos % 4] = c;
-            if (pos > 2) {
-                s = {};
-                s.set(buffer[0], true);
-                s.set(buffer[1], true);
-                s.set(buffer[2], true);
-                s.set(buffer[3], true);
-                if (s.count() == 4) {
-                    part1 = pos + 1;
-                    break;
-                }
-            }
-            ++pos;
-        }
-
-        print(part1); // part 1
+        auto part2 = pos_distinct_n<14>(line);
+        print(part2);
     }
 }
 
