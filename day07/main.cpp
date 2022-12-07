@@ -33,6 +33,15 @@ struct dir {
         }
         return r;
     }
+
+    void dirsAtLeast(uint64_t at_least, std::vector<dir const*>& out) {
+        if (size >= at_least) {
+            out.push_back(this);
+            for (auto& d : dirs) {
+                d.second.dirsAtLeast(at_least, out);
+            }
+        }
+    }
 };
 
 //-----------------------------------------------------------------------------
@@ -98,7 +107,20 @@ void solveFile(char const* fname) {
         }
     }
 
-    print(root.part1());
+    part1 = root.part1();
+    print(part1);
+
+    auto unused = 70000000 - root.size;
+    auto required = 30000000 - unused;
+    std::vector<dir const*> dirs;
+    root.dirsAtLeast(required, dirs);
+
+    auto m = std::min_element(dirs.begin(), dirs.end(), [](dir const* a, dir const* b) {
+        return (a->size < b->size);
+    });
+    
+    part2 = (*m)->size;
+    print(part2);
 }
 
 //-----------------------------------------------------------------------------
