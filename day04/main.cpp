@@ -1,17 +1,7 @@
-#include <bitset>
+
 #include "utils.h"
 
 using namespace std;
-
-int priority(char ch) {
-    if (ch >= 'a' && ch <= 'z') {
-        return ((ch - 'a') + 1);
-    }
-    if (ch >= 'A' && ch <= 'Z') {
-        return ((ch - 'A') + 27);
-    }
-    return 0;
-}
 
 //-----------------------------------------------------------------------------
 void solveFile(char const* fname) {
@@ -20,48 +10,27 @@ void solveFile(char const* fname) {
     uint64_t part1 = 0;
     uint64_t part2 = 0;
 
-    using Set = std::bitset<53>;
+    using Range = num_range<uint32_t>;
 
-    Set badge[3];
-    int g = 0;
+    Range a, b;
 
     for (auto line : f.lines()) {
         if (line.empty()) {
             break;
         }
-        auto a = line.left(line.size() / 2);
-        auto b = line.right(line.size() / 2);
-        Set s;
-        for (auto c : a) {
-            auto p = priority(c);
-            s.set(p, true);
-            badge[g].set(p, true);
-        }
-        for (auto c : b) {
-            auto p = priority(c);
-            if (s[p]) {
-                part1 += p;
-                break;
-            }
-        }
-        for (auto c : b) {
-            auto p = priority(c);
-            badge[g].set(p, true);
-        }
 
-        ++g;
-        if (g == 3) {
-            g = 0;
-            auto intersection = badge[0] & badge[1] & badge[2];
-            for (auto i : integers(intersection.size())) {
-                if (intersection[i]) {
-                    part2 += i;
-                    break;
-                }
-            }
-            badge[0] = {};
-            badge[1] = {};
-            badge[2] = {};
+        auto p = line;
+        a.start_ = p.split('-').parseUInt64();
+        a.limit_ = 1 + p.split(',').parseUInt64();
+
+        b.start_ = p.split('-').parseUInt64();
+        b.limit_ = 1 + p.parseUInt64();
+
+        if (a.contains(b) || b.contains(a)) {
+            ++part1;
+        }
+        if (a.intersects(b)) {
+            ++part2;
         }
     }
     //assert(score > 10747);
