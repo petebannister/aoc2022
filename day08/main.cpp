@@ -5,7 +5,7 @@
 
 using namespace std;
 
-using Grid = std::vector<std::vector<uint16_t>>;
+using Grid = std::vector<std::vector<uint8_t>>;
 
 //-----------------------------------------------------------------------------
 void solveFile(char const* fname) {
@@ -63,6 +63,36 @@ void solveFile(char const* fname) {
         }
     }
 
+    auto tree = [&](Point p) {
+        return grid[p.y][p.x];
+    };
+
+    Bounds bounds;
+    bounds.x_.limit_ = cols;
+    bounds.y_.limit_ = rows;
+
+    auto scenic_score_d = [&](Point p, Point d) -> uint32_t{
+        uint32_t score = 0;
+        uint8_t h = tree(p);
+        auto i = p + d;
+        while (bounds.contains(i)) {
+            ++score;
+            auto t = tree(i);
+            if (t >= h) {
+                break;
+            }
+            i += d;
+        }
+        return score;
+    };
+    auto scenic_score = [&](Point p) {
+        auto a = scenic_score_d(p, { 0, -1 });
+        auto b = scenic_score_d(p, { -1, 0 });
+        auto c = scenic_score_d(p, { 0, 1 });
+        auto d = scenic_score_d(p, { 1, 0 });
+        return (a * b * c * d);
+    };
+
     //print(occlusion);
 
     for (auto y : integers(rows)) {
@@ -70,6 +100,7 @@ void solveFile(char const* fname) {
             if (grid[y][x] > occlusion[y][x]) {
                 ++part1;
             }
+            amax(part2, scenic_score(Point{ (int)x, (int)y }));
         }
     }
 

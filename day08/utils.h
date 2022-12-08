@@ -357,6 +357,9 @@ struct num_range {
     bool contains(self const& other) const {
         return ((other.start_ >= start_) && (other.limit_ <= limit_));
     }
+    bool contains(T const& v) const {
+        return ((v >= start_) && (v < limit_));
+    }
     T size() const {
         return (limit_ - start_);
     }
@@ -696,6 +699,10 @@ struct Bounds {
             }
             writeln();
         }
+    }
+
+    bool contains(Point const& p) const {
+        return (x_.contains(p.x) && y_.contains(p.y));
     }
 };
 
