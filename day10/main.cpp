@@ -38,6 +38,12 @@ void solveFile(char const* fname) {
     int64_t x = 1;
     int64_t cycle = 1;
 
+    char screen[6][41] = { 0 };
+
+    int row = 0;
+    int col = 0;
+
+
     auto exec = [&] {
         if (cycle >= 20) {
             if (0 == ((cycle - 20) % 40)) {
@@ -45,8 +51,24 @@ void solveFile(char const* fname) {
             }
         }
 
+
+        if (row < 6) {
+            if (col >= (x - 1) && col <= (x + 1)) {
+                screen[row][col] = '#';
+            }
+            else {
+                screen[row][col] = ' ';
+            }
+        }
+
         x += addx.next();
         ++cycle;
+
+        ++col;
+        if (col >= 40) {
+            col = 0;
+            ++row;
+        }
     };
 
     while (!f.empty()) {
@@ -64,9 +86,13 @@ void solveFile(char const* fname) {
         }
     }
 
-
     print(part1);
-    print(part2);
+
+    for (auto scanline : screen) {
+        print(scanline);
+    }
+
+    //print(part2);
 }
 
 //-----------------------------------------------------------------------------
