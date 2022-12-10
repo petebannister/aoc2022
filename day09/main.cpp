@@ -12,6 +12,43 @@ bool touching(Point a, Point b) {
     return (abs(d.x) <= 1) && (abs(d.y) <= 1);
 }
 
+void move(Point& T, Point& H) {
+
+    if (!touching(H, T)) {
+        if (T.y == H.y) {
+            if (T.x < H.x) {
+                T.x = H.x - 1;
+            }
+            else {
+                T.x = H.x + 1;
+            }
+        }
+        else if (T.x == H.x) {
+            if (T.y < H.y) {
+                T.y = H.y - 1;
+            }
+            else {
+                T.y = H.y + 1;
+            }
+        }
+        else {
+            if (T.x < H.x) {
+                ++T.x;
+            }
+            else {
+                --T.x;
+            }
+
+            if (T.y < H.y) {
+                ++T.y;
+            }
+            else {
+                --T.y;
+            }
+        }
+    }
+}
+
 //-----------------------------------------------------------------------------
 void solveFile(char const* fname) {
     TextFileIn f(fname);
@@ -22,6 +59,8 @@ void solveFile(char const* fname) {
     Point H;
     Point T;
 
+    array<Point, 10> rope = { {} };
+
     std::unordered_map<char, Point> m;
     m['R'] = { 1, 0 };
     m['U'] = { 0, -1 };
@@ -29,8 +68,10 @@ void solveFile(char const* fname) {
     m['D'] = { 0, 1 };
 
     std::set<Point> visited;
+    std::set<Point> visited2;
 
     visited.insert(T);
+    visited2.insert(T);
 
     for (auto line : f.lines()) {
         if (line.empty()) {
@@ -41,46 +82,24 @@ void solveFile(char const* fname) {
         auto n = line.parseInt64();
         while (n--) {
             H += dir;
-            if (!touching(H, T)) {
-                if (T.y == H.y) {
-                    if (T.x < H.x) {
-                        T.x = H.x - 1;
-                    }
-                    else {
-                        T.x = H.x + 1;
-                    }
-                }
-                else if (T.x == H.x) {
-                    if (T.y < H.y) {
-                        T.y = H.y - 1;
-                    }
-                    else {
-                        T.y = H.y + 1;
-                    }
-                }
-                else {
-                    if (T.x < H.x) {
-                        ++T.x;
-                    }
-                    else {
-                        --T.x;
-                    }
 
-                    if (T.y < H.y) {
-                        ++T.y;
-                    }
-                    else {
-                        --T.y;
-                    }
-                }
-            }
+            rope.front() += dir;
+
+            move(T, H);
             visited.insert(T);
+
+            for (auto k : integers(rope.size() - 1)) {
+                move(rope[k + 1], rope[k]);
+            }
+            visited2.insert(rope.back());
         }
         
 
     }
 
     part1 = visited.size();
+    part2 = visited2.size();
+    //assert(part1 == 6339);
     print(part1);
     print(part2);
 }
