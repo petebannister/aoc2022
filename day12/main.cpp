@@ -1,6 +1,5 @@
 
-#include <array>
-#include <bitset>
+
 #include "utils.h"
 
 using namespace std;
@@ -27,6 +26,7 @@ void solveFile(char const* fname) {
 
     Point S;
     Point E;
+    vector<Point> lowest_points;
 
     int y = 0;
     int x = 0;
@@ -35,9 +35,13 @@ void solveFile(char const* fname) {
         for (auto& v : row) {
             if (v == 'S') {
                 S = { x, y };
+                lowest_points.push_back(S);
             }
             if (v == 'E') {
                 E = { x, y };
+            }
+            if (v == 'a') {
+                lowest_points.push_back({ x, y });
             }
             ++x;
         }
@@ -47,9 +51,10 @@ void solveFile(char const* fname) {
     Bounds bounds;
     bounds.x_.limit_ = cols;
     bounds.y_.limit_ = rows;
-    map<Point, int> steps;
+    unordered_map<Point, int> steps;
     deque<Point> queue;
     queue.push_back(E);
+
 
     auto dirs = {
         Point(-1, 0),
@@ -100,7 +105,13 @@ void solveFile(char const* fname) {
     }
     part1 = steps[S];
         
-    part2 = 0;
+    part2 = part1;
+    for (auto&& lp : lowest_points) {
+        if (auto* n = map_value(steps, lp)) {
+
+            amin(part2, *n);
+        }
+    }
 
     print(part1);
 
@@ -109,10 +120,16 @@ void solveFile(char const* fname) {
 
 //-----------------------------------------------------------------------------
 int main() {
+    using Clock = chrono::high_resolution_clock;
+
     print("example");
     solveFile("example.txt");
+
+    auto start = Clock::now();
     print("input");
     solveFile("input.txt");
-    
+    auto end = Clock::now();
+    std::cout << chrono::duration_cast<chrono::microseconds>(end - start).count() << "uS" << std::endl;
+
     return 0;
 }

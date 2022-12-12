@@ -17,6 +17,9 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <vector>
+#include <array>
+#include <bitset>
+#include <chrono>
 
 #include "utils_stringview.h"
 
@@ -447,6 +450,23 @@ inline T const map_value_or(std::map<K, T, C> const& c, U const& key, V const& v
     return value;
 }
 
+template <typename K, typename T>
+inline T const* map_value(std::unordered_map<K, T> const& c, K const& key) {
+    auto i = c.find(key);
+    if (c.end() != i) {
+        return &i->second;
+    }
+    return nullptr;
+}
+template <typename K, typename T, typename C, typename U>
+inline T* map_value(std::unordered_map<K, T, C>& c, U const& key) {
+    auto i = c.find(key);
+    if (c.end() != i) {
+        return &i->second;
+    }
+    return nullptr;
+}
+
 template <typename T>
 inline T element(size_t index, std::initializer_list<T> const& elems) {
     if (index < elems.size()) {
@@ -656,8 +676,22 @@ struct Point {
     int manhattan() const {
         return abs(x) + abs(y);
     }
+
+    size_t hash() const {
+        auto h = std::hash<int>();
+        return h(x) ^ h(y);
+    }
 };
 using points = std::vector<Point>;
+
+namespace std {
+    template <>
+    struct hash<Point> {
+        size_t operator()(Point const& p) const {
+            return p.hash();
+        }
+    };
+}
 
 struct Bounds {
     num_range<int> x_;
