@@ -91,6 +91,8 @@ void solveFile(char const* fname) {
 
     uint32_t pair_index = 1;
 
+    std::vector<Value> all;
+
     while (!f.empty()) {
         auto a = f.line();
         auto b = f.line();
@@ -101,12 +103,40 @@ void solveFile(char const* fname) {
         va.parse(a);
         vb.parse(b);
 
+        all.push_back(va);
+        all.push_back(vb);
+
         if (va.compare(vb) < 1) {
             part1 += pair_index;
         }
 
         ++pair_index;
     }
+    auto divastr = StringView("[[2]]");
+    auto divbstr = StringView("[[6]]");
+    Value diva;
+    Value divb;
+    diva.parse(divastr);
+    divb.parse(divbstr);
+
+    std::vector<Value*> order;
+    for (auto& v : all) {
+        order.push_back(&v);
+    }
+
+    order.push_back(&diva);
+    order.push_back(&divb);
+
+    std::sort(order.begin(), order.end(), [&](Value const* a, Value const* b) {
+        auto ca = *a;
+        auto cb = *b; // copy as compare can mutate
+        return (ca.compare(cb) < 0);
+    });
+
+    auto diva_index = index_of(order, &diva);
+    auto divb_index = index_of(order, &divb);
+
+    part2 = (diva_index + 1) * (divb_index + 1);
 
     print(part1);
 

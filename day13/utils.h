@@ -391,6 +391,14 @@ inline std::set<K> keys(std::map<K, T, C, typename A> const& m) {
     }
     return s;
 }
+template <typename T>
+inline std::ptrdiff_t index_of(std::vector<T> const& c, T const& val) {
+    auto pos = std::find(c.begin(), c.end(), val);
+    if (c.end() == pos) {
+        return -1;
+    }
+    return std::distance(c.begin(), pos);
+}
 template <typename T, size_t N>
 inline bool contains(T const(&c)[N], T const& val) {
     for (auto&& v : c) {
