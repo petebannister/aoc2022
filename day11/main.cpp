@@ -7,23 +7,32 @@
 
 using namespace std;
 
+int divider;
+//size_t round_number
+int64_t initial_modulo = 0;
+int64_t modulo = 0;
+
 struct monkey
 {
-    std::vector<int> items;
-    std::function<int(int)> op;
+    size_t total_inspected = 0u;
+    std::vector<int64_t> initial;
+    std::vector<int64_t> items;
+    std::function<int64_t(int64_t)> op;
     int test = 1;
     monkey* on_true = nullptr;
     monkey* on_false = nullptr;
     int on_true_index = 0;
     int on_false_index = 0;
 
-    size_t total_inspected = 0u;
 
     void turn() {
         total_inspected += items.size();
         for (auto v : items) {
             auto w = op(v);
-            w /= 3;
+            w /= divider;
+            if (modulo != 0) {
+                w %= modulo;
+            }
             if (0 == (w % test)) {
                 on_true->items.push_back(w);
             }
@@ -32,6 +41,10 @@ struct monkey
             }
         }
         items.clear();
+    }
+    void reset() {
+        items = initial;
+        total_inspected = 0;
     }
 };
 
@@ -51,14 +64,15 @@ void solveFile(char const* fname) {
         return line.trimmed();
     };
 
+    initial_modulo = 0;
 
     auto* m = &monkeys[0];
     while (!f.empty()) {
         f.line(); // monkey number
-        auto starting = getline_after_colon();        
+        auto starting = getline_after_colon();
         while (!starting.empty()) {
             auto v = starting.split(',').parseInt64();
-            m->items.push_back(v);
+            m->initial.push_back(v);
         }
         auto op = getline_after_colon();
         op.split();
@@ -67,28 +81,42 @@ void solveFile(char const* fname) {
         auto opc = op.split()[0];
         op.trim();
         auto opval = op.parseInt64();
-        if (opc == '+') {
-            if (op == "old") {
-                m->op = [=](int v) { return v + v; };
-            }
-            else {
-                m->op = [=](int v) { return v + opval; };
-            }
-        }
-        else if (opc == '*') {
-            if (op == "old") {
-                m->op = [=](int v) { return v * v; };
-            }
-            else {
-                m->op = [=](int v) { return v * opval; };
-            }
-        }
 
         auto test = getline_after_colon();
         test.split();
         test.split();
-        m->test = test.parseInt64();
 
+        auto testval = test.parseInt64();
+        m->test = testval;
+
+        if (initial_modulo == 0) {
+            initial_modulo = testval;
+        }
+        else {
+            initial_modulo *= testval;
+        }
+
+        if (opc == '+') {
+            if (op == "old") {
+                m->op = [=](auto v) { return v + v; };
+            }
+            else {
+                m->op = [=](auto v) { return v + opval; };
+            }
+        }
+        else if (opc == '*') {
+            if (op == "old") {
+                m->op = [=](auto v) { 
+                    //modulo *= v;
+                    return v * v; 
+                };
+            }
+            else {
+                m->op = [=](auto v) { 
+                    return v * opval;
+                };
+            }
+        }
 
         auto t = getline_after_colon();
         t.split();
@@ -108,21 +136,70 @@ void solveFile(char const* fname) {
         ++m;
     }
 
-    for (auto i : integers(20)) {
+    auto iterate = [&](size_t N) {
+        modulo = initial_modulo;
         for (auto& m : monkeys) {
-            m.turn();
+            m.reset();
         }
-    }
+        for (auto i : integers(N)) {
+            for (auto& m : monkeys) {
+                m.turn();
+            }
+        }
 
-    std::vector<monkey*> sorted;
-    for (auto& m : monkeys) {
-        sorted.push_back(&m);
+        std::vector<monkey*> sorted;
+        for (auto& m : monkeys) {
+            sorted.push_back(&m);
+        }
+        std::sort(sorted.begin(), sorted.end(), [&](monkey* a, monkey* b) {
+            return a->total_inspected > b->total_inspected;
+            });
+
+        //part1 = sorted[0]->total_inspected * sorted[1]->total_inspected;
+        return sorted[0]->total_inspected * sorted[1]->total_inspected;
+    };
+
+    // part1
+    divider = 3;
+   // part1 = iterate(20);
+
+    // part2
+    divider = 1;
+
+    part2 = iterate(1);
+    part2 = iterate(20);
+    part2 = iterate(1000);
+    part2 = iterate(2000);
+
+#if 0
+    //limit = 1;
+    //modulo = 1;
+    part2 = 0;
+    while (1) {
+        if (10197 == iterate(20)) {
+            int dbg = 0;
+            break;
+        }
+        ++divider;
     }
-    std::sort(sorted.begin(), sorted.end(), [&](monkey* a, monkey* b) {
-        return a->total_inspected > b->total_inspected;
-    });
+    while (1) {
+        if (27019168 == iterate(1000)) {
+            int dbg = 0;
+            break;
+        }
+        ++divider;
+    }
+    while (1) {
+        if (2713310158 == iterate(10000)) {
+            int dbg = 0;
+            break;
+        }
+        ++divider;
+    }
+#endif
     
-    part1 = sorted[0]->total_inspected * sorted[1]->total_inspected;
+    //part1 = sorted[0]->total_inspected * sorted[1]->total_inspected;
+    part2 = iterate(10000);
 
     print(part1);
 
